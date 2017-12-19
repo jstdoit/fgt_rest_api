@@ -1,50 +1,12 @@
-module Fgt
-  class RestApi
-    require 'httpclient'
-    require 'json'
-    require 'active_support/core_ext/array'
-    require 'active_support/core_ext/hash'
-    require 'timeout'
+require 'httpclient'
+require 'json'
+require 'ostruct'
+require 'timeout'
 
-    Retries = 3
+module FGT
+  class RestApi
 
     class << self
-
-      def typecast(value)
-        if value.is_a? String
-          if /^(?:([1-9]\d+)|\d)$/ === value
-            value.to_i
-          elsif /^(\d+)?\.(\d+)$/ === value
-            value.to_f
-          elsif /^true$/i === value
-            value = true
-          elsif /^false$/i === value
-            value = false
-          else
-            value
-          end
-        else
-          value
-        end
-      end
-      private :typecast
-
-      def deep_rubyfi_parsed_json(parsed_json)
-        if parsed_json.is_a?(String)
-          parsed_json.replace(typecast(parsed_json))
-        elsif parsed_json.is_a?(Array)
-          parsed_json.each do |e|
-            e.replace(deep_rubyfi_parsed_json(e))
-          end
-        elsif parsed_json.is_a?(Hash)
-          parsed_json.transform_values! { |v| typecast(v) }
-          parsed_json.transform_keys! { |key| key.gsub(/-/, '_') if key.is_a?(String) }
-          parsed_json.symbolize_keys!
-          parsed_json.each { |k,v| deep_rubyfi_parsed_json(v) if ( v.is_a?(Hash) || v.is_a?(Array) ) }
-        else
-          raise DeepRubyfiError
-        end
-      end
 
       def tcp_port_open?(ip, port, timeout = 2)
         begin
@@ -62,10 +24,17 @@ module Fgt
         end
         false
       end
+
     end
 
-    attr_reader :proxy, :use_proxy, :url_schema
-    attr_accessor :api_version, :ip, :port, :username, :secretkey, :timeout, :ccsrftoken, :client, :debug, :safe_mode, :rubyfi, :use_vdom
+
+    attr_reader(:proxy, :use_proxy, :url_schema)
+    attr_accessor(
+      :api_version, :ip, :port,
+      :username, :secretkey, :timeout,
+      :ccsrftoken, :client, :debug,
+      :safe_mode, :use_vdom, :retry_counter
+    )
 
     def initialize(
       api_version: 'v2',
@@ -79,12 +48,11 @@ module Fgt
       use_proxy: false,
       debug: false,
       safe_mode: true,
-      rubyfi: false,
+      retry_counter: 3,
       use_vdom: 'root'
     )
       self.url_schema = url_schema
       self.use_vdom = use_vdom
-      self.rubyfi = rubyfi
       self.safe_mode = safe_mode
       self.debug = debug
       self.timeout = timeout
@@ -97,6 +65,7 @@ module Fgt
       self.username = username
       self.secretkey = password
       self.ccsrftoken = String.new
+      self.retry_counter = retry_counter
     end
 
     def use_proxy=(boolean)
@@ -173,22 +142,19 @@ module Fgt
       end
     end
 
+
     private :client
 
     private
 
       def url_schema=(schema)
-        if schema == 'http'
-          @url_schema = 'http'
-        else
-          @url_schema = 'https'
-        end
+        @url_schema = (schema == 'http' ? 'http' : 'https')
       end
 
       def new_httpclient
-        if not use_proxy
+        unless use_proxy
           ENV['http_proxy'] = ''
-          raise FGTPortNotOpenError if not self.class.tcp_port_open?(ip, port, timeout)
+          raise FGTPortNotOpenError unless self.class.tcp_port_open?(ip, port, timeout)
         else
           ENV['http_proxy'] = proxy
         end
@@ -206,11 +172,11 @@ module Fgt
         raise CMDBChildNameError unless /^[^\/]*$/ === child_name
         raise CMDBChildMKeyError unless /^[^\/]*$/ === child_mkey
         url_path = "api/#{api_version}/cmdb/#{path}/#{name}/"
-        if not mkey.empty?
+        unless mkey.empty?
           url_path += "#{mkey}/"
-          if not child_name.empty?
+          unless child_name.empty?
             url_path += "#{child_name}/"
-            if not child_mkey.empty?
+            unless child_mkey.empty?
               url_path += "#{child_mkey}/"
             end
           end
@@ -235,7 +201,7 @@ module Fgt
       end
 
       def request(method, path, params = {})
-        retries ||= self.class::Retries
+        retries ||= retry_counter
         url = "#{url_schema}://#{ip}:#{port}/#{path}"
         Timeout::timeout(timeout) do
           begin
@@ -261,20 +227,20 @@ module Fgt
             #raise HTTP424FailedDependencyError if response.status_code == 424
             #raise HTTP500InternalServerError if response.status_code == 500
             #raise HTTPStatusNot200Error if response.status_code != 200
-            parsed_body = JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''))
-            if rubyfi
+            parsed_body = JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
+            #if rubyfi
             #  if method == 'get'
             #    retval = self.class.deep_rubyfi_parsed_json(parsed_body['results'])
             #  else
-              self.class.deep_rubyfi_parsed_json(parsed_body)
+            #  self.class.deep_rubyfi_parsed_json(parsed_body)
             #  end
-            else
+            #else
             #  if method == 'get'
             #    retval = parsed_body['results']
             #  else
-              parsed_body
+            #  parsed_body
             #  end
-            end
+            #end
           #rescue HTTP302FoundMovedError => e
           #  # ToDo: get new location from Location Header and retry
           #  STDERR.puts "302: #{response.backtrace} " + e.inspect if debug
@@ -320,7 +286,7 @@ module Fgt
       end
 
       def login
-        retries ||= self.class::Retries
+        retries ||= retry_counter
         Timeout::timeout(timeout) do
           begin
             url = "https://#{ip}:#{port}/logincheck"
@@ -342,7 +308,7 @@ module Fgt
       end
 
       def logout
-        retries = self.class::Retries
+        retries = retry_counter
         Timeout::timeout(@timeout) do
           begin
             url = "https://#{@ip}:#{@port}/logout"

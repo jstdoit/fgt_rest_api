@@ -6,12 +6,13 @@ require "fgt_rest_api/version"
 Gem::Specification.new do |spec|
   spec.name          = "fgt_rest_api"
   spec.version       = FgtRestApi::VERSION
+  spec.licenses      = ['Artistic-2.0']
   spec.authors       = ["Stefan Feurle"]
   spec.email         = ["stefan.feurle@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{ruby API wrapper for accessing FortiNet's FortiGate REST API.}
+  spec.description   = %q{}
+  spec.homepage      = "https://github.com/fuegito/fgt_rest_api"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
@@ -25,9 +26,14 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
-  spec.bindir        = "exe"
+  spec.bindir        = "bin"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_runtime_dependency 'timeout'
+  spec.add_runtime_dependency 'json'
+  spec.add_runtime_dependency 'ostruct'
+  spec.add_runtime_dependency 'httpclient'
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"
