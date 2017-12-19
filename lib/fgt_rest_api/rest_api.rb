@@ -1,6 +1,5 @@
 require 'httpclient'
 require 'json'
-require 'ostruct'
 require 'timeout'
 
 module FGT
