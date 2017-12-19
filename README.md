@@ -40,11 +40,9 @@ Run IRB and:
     demo = FGT::RestApi.new(ip: 'fortigate.fortidemo.com', port: 443, username: 'demo', password: 'demo')
     demo.timeout = 10
     addresses = demo.cmdb_get(path: 'firewall', name: 'address')['results']
-    addresses.first.type
-    addresses.first['type']
-    addresses.first[:type]
-
-    -> "wildcard-fqdn"
+    addresses.first.type    -> "wildcard-fqdn"
+    addresses.first['type'] -> "wildcard-fqdn"
+    addresses.first[:type]  -> "wildcard-fqdn"
 
 You can access the objects with the original key delivered from the JSON API (object['start-ip']) or with smybols (object[:start_ip]) or with attribute methods (object.start_ip).
 
