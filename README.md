@@ -1,10 +1,22 @@
-# FgtRestApi
+# FGT::RestApi
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/fgt_rest_api`. To experiment with that code, run `bin/console` for an interactive prompt.
+Welcome to fgt_rest_api! In this directory, you'll find the files you need to be able to package up fgt_rest_api into a gem. Put your Ruby code in the file `lib/fgt_rest_api`. To experiment with that code, run `bin/console` for an interactive prompt.
 
 TODO: Delete this and the text above, and describe your gem
 
 ## Installation
+
+### current release
+
+This gem has not been released yet. There is much work to do on documentation and some refactoring as well.
+
+Checkout the tree from https://github.com/fuegito/fgt_rest_api.git.
+Chdir in the repo-dir and do a "rake build".
+After that, do "gem install pkg/fgt_rest_api-0.0.1.gem".
+Now you can use this gem as described below in 'Usage'.
+
+
+### This Part is for later usage (1.0.0)
 
 Add this line to your application's Gemfile:
 
@@ -22,7 +34,11 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+require 'fgt_rest_api'
+
+demo = FGT::RestApi.new(ip: 'fortigate.fortidemo.com', port: 443, username: 'demo', password: 'demo')
+demo.timeout = 10
+addresses = demo.cmdb_get(path: 'firewall', name: 'address')['results']
 
 ## Development
 
