@@ -191,46 +191,7 @@ module FGT
             else
               raise HTTPMethodUnknownError
             end
-            #raise HTTP302FoundMovedError if response.status_code == 302
-            #raise HTTP400BadRequestError if response.status_code == 400
-            #raise HTTP401NotAuthorizedError if response.status_code == 401
-            #raise HTTP403ForbiddenError if response.status_code == 403
-            #raise HTTP404ResourceNotFoundError if response.status_code == 404
-            #raise HTTP405MethodNotAllowedError if response.status_code == 405
-            #raise HTTP413RequestEntitiyToLargeError if response.status_code == 413
-            #raise HTTP424FailedDependencyError if response.status_code == 424
-            #raise HTTP500InternalServerError if response.status_code == 500
-            #raise HTTPStatusNot200Error if response.status_code != 200
             parsed_body = JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
-          #rescue HTTP302FoundMovedError => e
-          #  # ToDo: get new location from Location Header and retry
-          #  STDERR.puts "302: #{response.backtrace} " + e.inspect if debug
-          #  raise
-          #rescue HTTP400BadRequestError, HTTP401NotAuthorizedError, HTTP403ForbiddenError, HTTP413RequestEntitiyToLargeError => e
-          #  STDERR.puts "40x Error, retrying... => #{e.backtrace}" if debug
-          #  retry if (retries -= 1) > 0
-          #  raise # TooManyRetriesError
-          #rescue HTTP424FailedDependencyError => e
-          #  STDERR.puts "response_body: #{response.body}" if debug
-          #  raise
-          #rescue HTTP404ResourceNotFoundError => e
-          #  STDERR.puts "404 not found: #{url} => #{e.backtrace}" if debug
-          #  STDERR.puts "response_body: #{response.body}" if debug
-          #  raise
-          #rescue HTTP405MethodNotAllowedError => e
-          #  STDERR.puts "405 request method not allowed => #{e.backtrace}" if debug
-          #  STDERR.puts "response_body: #{response.body}" if debug
-          #  raise
-          #rescue HTTP500InternalServerError => e
-          #  STDERR.puts "500 Server Error, retrying... => #{e.backtrace}" if debug
-          #  STDERR.puts "response_body: #{response.body}" if debug
-          #  retry if (retries -= 1) > 0
-          #  raise # TooManyRetriesError
-          #rescue HTTPStatusNot200Error => e
-          #  STDERR.puts "other Error #{e.inspect}, retrying... => #{e.backtrace}" if debug
-          #  STDERR.puts "response_body: #{response.body}" if debug
-          #  retry if (retries -= 1) > 0
-          #  raise # TooManyRetriesError
           rescue JSON::ParserError => e
             STDERR.puts "#{e.inspect} => #{e.backtrace}" if debug
             STDERR.puts "response_body: #{response.body}" if debug
