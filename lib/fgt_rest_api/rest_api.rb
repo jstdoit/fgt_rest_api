@@ -79,22 +79,11 @@ module FGT
 
     %w( get post ).each do |request_method|
       define_method('monitor_' + request_method) do |path, params = {}|
-        raise SafeModeActiveError if (request_method != 'get' && safe_mode)
+        raise(SafeModeActiveError) if (request_method != 'get' && safe_mode)
         path.gsub!(/\/*$/, '')
         url_path = "api/#{api_version}/monitor/#{path}/"
         params[:vdom] = use_vdom unless params.key?(:vdom)
-        begin
-          request(request_method, url_path, params)
-        #rescue HTTP405MethodNotAllowedError => e
-        #  STDERR.puts "method #{request_method} not allowed for this api_method"
-        #  raise
-        #rescue HTTP403ForbiddenError => e
-        #  STDERR.puts "current user not authorized for this api_method"
-        #  raise
-        #rescue HTTP404ResourceNotFoundError => e
-        #  STDERR.puts "resource does not exist"
-        #  raise
-        end
+        request(request_method, url_path, params)
       end
     end
 
@@ -106,38 +95,38 @@ module FGT
     end
 
     def vdoms
-      cmdb_get(path: 'system', name: 'vdom')[:results].map { |v| v[:name] }
+      cmdb_get(path: 'system', name: 'vdom').results.map { |v| v.name }
     end
 
     def hostname
-      cmdb_get(path: 'system', name: 'global')[:results][:hostname]
+      cmdb_get(path: 'system', name: 'global').results.hostname
     end
 
     def interface_by_name(interface, vdom = use_vdom)
-      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: ["name==#{interface}", "vdom==#{vdom}"] })[:results].find do |i|
-        i[:vdom] == vdom && i[:name] == interface
+      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: ["name==#{interface}", "vdom==#{vdom}"] }).results.find do |i|
+        i.vdom == vdom && i.name == interface
       end
     end
 
     # Interface types: %w[vlan physical aggregate tunnel]
     def interfaces(vdom = use_vdom, *interface_types)
       interface_types = %w[vlan physical aggregate tunnel] if interface_types.empty?
-      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: "vdom==#{vdom}" })[:results].select do |n|
-        interface_types.include?(n[:type]) && n[:vdom] == vdom
+      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: "vdom==#{vdom}" }).results.select do |n|
+        interface_types.include?(n.type) && n.vdom == vdom
       end
     end
 
     #vpn ipsec
-    %w( phase1 phase1_interface phase2 phase2_interface forticlient ).each do |name|
+    %w[phase1 phase1_interface phase2 phase2_interface forticlient].each do |name|
       define_method('vpn_ipsec_' + name) do |vdom = use_vdom|
-        response = cmdb_get(path: 'vpn.ipsec', name: name.gsub('_', '-'), vdom: vdom)
+        cmdb_get(path: 'vpn.ipsec', name: name.gsub('_', '-'), vdom: vdom)
       end
     end
 
     #router
-    %w( static policy ospf bgp isis rip ).each do |name|
+    %w[static policy ospf bgp isis rip].each do |name|
       define_method('router_' + name) do |vdom = use_vdom|
-        response = cmdb_get(path: 'router', name: name, vdom: vdom)
+        cmdb_get(path: 'router', name: name, vdom: vdom)
       end
     end
 
@@ -164,12 +153,12 @@ module FGT
       end
 
       def cmdb(request_method: 'get', path:, name:, mkey: '', child_name: '', child_mkey: '', vdom: use_vdom, params: {})
-        raise SafeModeActiveError if (request_method != 'get' && safe_mode)
-        raise CMDBPathError unless /^\w*\.?\w+$/ === path
-        raise CMDBNameError unless /^[^\/]+$/ === name
-        raise CMDBMKeyError unless /^[^\/]*$/ === mkey
-        raise CMDBChildNameError unless /^[^\/]*$/ === child_name
-        raise CMDBChildMKeyError unless /^[^\/]*$/ === child_mkey
+        raise(SafeModeActiveError) if (request_method != 'get' && safe_mode)
+        raise(CMDBPathError) unless /^\w*\.?\w+$/ === path
+        raise(CMDBNameError) unless /^[^\/]+$/ === name
+        raise(CMDBMKeyError) unless /^[^\/]*$/ === mkey
+        raise(CMDBChildNameError) unless /^[^\/]*$/ === child_name
+        raise(CMDBChildMKeyError) unless /^[^\/]*$/ === child_mkey
         url_path = "api/#{api_version}/cmdb/#{path}/#{name}/"
         unless mkey.empty?
           url_path += "#{mkey}/"
@@ -182,21 +171,7 @@ module FGT
         end
         url_path += "?vdom=#{vdom}" if %w( put delete ).include?(request_method)
         params[:vdom] = vdom if %w( post get ).include?(request_method)
-        begin
-          request(request_method, url_path, params)
-        #rescue HTTP405MethodNotAllowedError => e
-        #  STDERR.puts "method #{request_method} not allowed for this api_method"
-        #  raise
-        #rescue HTTP403ForbiddenError => e
-        #  STDERR.puts "current user not authorized for this api_method"
-        #  raise
-        #rescue HTTP404ResourceNotFoundError => e
-        #  STDERR.puts "resource does not exist"
-        #  raise
-        #rescue HTTP424FailedDependencyError => e
-        #  STDERR.puts "object does not exist"
-        #  raise
-        end
+        request(request_method, url_path, params)
       end
 
       def request(method, path, params = {})
@@ -227,19 +202,6 @@ module FGT
             #raise HTTP500InternalServerError if response.status_code == 500
             #raise HTTPStatusNot200Error if response.status_code != 200
             parsed_body = JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
-            #if rubyfi
-            #  if method == 'get'
-            #    retval = self.class.deep_rubyfi_parsed_json(parsed_body['results'])
-            #  else
-            #  self.class.deep_rubyfi_parsed_json(parsed_body)
-            #  end
-            #else
-            #  if method == 'get'
-            #    retval = parsed_body['results']
-            #  else
-            #  parsed_body
-            #  end
-            #end
           #rescue HTTP302FoundMovedError => e
           #  # ToDo: get new location from Location Header and retry
           #  STDERR.puts "302: #{response.backtrace} " + e.inspect if debug
@@ -275,7 +237,7 @@ module FGT
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           rescue Java::JavaNet::SocketException, SocketError => e
-            #STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
+            STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           ensure
@@ -292,11 +254,11 @@ module FGT
             params = { username: username, secretkey: secretkey }
             client.post(url, params)
           rescue Java::JavaNet::SocketException, SocketError => e
-            STDERR.puts '#login: ' + e.inspect if debug
+            STDERR.puts('#login: ' + e.inspect) if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           rescue JSON::ParserError => e
-            STDERR.puts '#login post: JSON::ParserError' + e.inspect if debug
+            STDERR.puts('#login post: JSON::ParserError' + e.inspect) if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           end
@@ -313,7 +275,7 @@ module FGT
             url = "https://#{@ip}:#{@port}/logout"
             client.get(url)
           rescue Java::JavaNet::SocketException, SocketError => e
-            STDERR.puts '#logout: ' + e.inspect if debug
+            STDERR.puts('#logout: ' + e.inspect) if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           end
