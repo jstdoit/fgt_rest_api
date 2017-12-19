@@ -77,7 +77,7 @@ module FGT
       self.client = new_httpclient if use_proxy
     end
 
-    %w( get post ).each do |request_method|
+    %w[get post].each do |request_method|
       define_method('monitor_' + request_method) do |path, params = {}|
         raise(SafeModeActiveError) if (request_method != 'get' && safe_mode)
         path.gsub!(/\/*$/, '')
@@ -87,7 +87,7 @@ module FGT
       end
     end
 
-    %w( get post put delete ).each do |request_method|
+    %w[get post put delete].each do |request_method|
       define_method('cmdb_' + request_method) do |args_hash|
         args_hash[:request_method] = request_method
         cmdb(args_hash)
