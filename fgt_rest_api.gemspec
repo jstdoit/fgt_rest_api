@@ -30,8 +30,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency 'timeout'
-  spec.add_runtime_dependency 'json'
   spec.add_runtime_dependency 'httpclient'
 
   spec.add_development_dependency "bundler", "~> 1.16"
