@@ -8,11 +8,11 @@ TODO: Delete this and the text above, and describe your gem
 
 ### current release
 
-This gem has not been released yet. There is much work to do on documentation and some refactoring as well.
+This gem has not been released to rubygems, yet. There is much work to do on documentation and some refactoring as well.
 
 Checkout the tree from https://github.com/fuegito/fgt_rest_api.git.
 Chdir in the repo-dir and do a "rake build".
-After that, do "gem install pkg/fgt_rest_api-0.0.1.gem".
+After that, do "gem install pkg/fgt_rest_api-<VERSION>.gem".
 Now you can use this gem as described below in 'Usage'.
 
 
@@ -37,8 +37,15 @@ Or install it yourself as:
 require 'fgt_rest_api'
 
 demo = FGT::RestApi.new(ip: 'fortigate.fortidemo.com', port: 443, username: 'demo', password: 'demo')
+
 demo.timeout = 10
+
 addresses = demo.cmdb_get(path: 'firewall', name: 'address')['results']
+
+addresses.first.type ( == addresses.first['type'] == addresses.first[:type])
+-> "wildcard-fqdn"
+
+You can access the objects with the original key delivered from the JSON API (object['start-ip']) or with smybols (object[:start_ip]) or with attribute methods (object.start_ip).
 
 ## Development
 
