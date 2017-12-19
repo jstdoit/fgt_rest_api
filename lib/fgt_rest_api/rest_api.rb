@@ -191,7 +191,7 @@ module FGT
             else
               raise HTTPMethodUnknownError
             end
-            parsed_body = JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
+            JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
           rescue JSON::ParserError => e
             STDERR.puts "#{e.inspect} => #{e.backtrace}" if debug
             STDERR.puts "response_body: #{response.body}" if debug
