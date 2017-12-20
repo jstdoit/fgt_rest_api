@@ -8,7 +8,7 @@ module FGT
 
     class << self
 
-      def tcp_port_open2(ip, port, timeout = 2)
+      def tcp_port_open?(ip, port, timeout = 2)
         Timeout.timeout(timeout) do
           TCPSocket.new(ip, port).close
           true
