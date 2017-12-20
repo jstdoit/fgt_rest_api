@@ -216,9 +216,7 @@ module FGT
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
           end
-          client.cookies.each do |cookie|
-            self.ccsrftoken = cookie.value if cookie.name == 'ccsrftoken'
-          end
+          self.ccsrftoken = client.cookies.find { |c| c.name == 'ccsrftoken' }
         end
       end
 
