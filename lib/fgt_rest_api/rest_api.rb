@@ -16,6 +16,7 @@ module FGT
     end
 
     attr_reader(:proxy, :use_proxy, :url_schema)
+
     attr_accessor(
       :api_version, :ip, :port,
       :username, :secretkey, :timeout,
