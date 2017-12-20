@@ -1,7 +1,7 @@
-
-require 'httpclient'
-require 'json'
 require 'timeout'
+require 'socket'
+require 'json'
+require 'httpclient'
 
 module FGT
   class RestApi
