@@ -1,0 +1,5 @@
+require 'fgt_rest_api'
+require 'fgt_rest_api/system'
+require 'fgt_rest_api/router'
+require 'fgt_rest_api/interface'
+require 'fgt_rest_api/ipsec'
