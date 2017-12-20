@@ -1,3 +1,4 @@
+
 require 'httpclient'
 require 'json'
 require 'timeout'
@@ -7,25 +8,17 @@ module FGT
 
     class << self
 
-      def tcp_port_open?(ip, port, timeout = 2)
-        begin
-          Timeout::timeout(timeout) do
-            begin
-              s = TCPSocket.new(ip, port)
-              s.close
-              return true
-            rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-              return false
-            end
-          end
-        rescue Timeout::Error
-          return false
+      def tcp_port_open2(ip, port, timeout = 2)
+        Timeout.timeout(timeout) do
+          TCPSocket.new(ip, port).close
+          true
         end
-        false
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
+             Errno::ETIMEDOUT, Timeout::Error
+        return false
       end
 
     end
-
 
     attr_reader(:proxy, :use_proxy, :url_schema)
     attr_accessor(
