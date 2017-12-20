@@ -1,8 +1,3 @@
-require 'timeout'
-require 'socket'
-require 'json'
-require 'httpclient'
-
 module FGT
   class RestApi
 
@@ -65,9 +60,10 @@ module FGT
       self.client = new_httpclient
     end
 
-    def proxy=(proxy)
-      @proxy = proxy
+    def proxy=(pxy)
+      @proxy = pxy
       self.client = new_httpclient if use_proxy
+      proxy
     end
 
     %w[get post].each do |request_method|
@@ -87,49 +83,14 @@ module FGT
       end
     end
 
-    def vdoms
-      cmdb_get(path: 'system', name: 'vdom').results.map { |v| v.name }
-    end
-
-    def hostname
-      cmdb_get(path: 'system', name: 'global').results.hostname
-    end
-
-    def interface_by_name(interface, vdom = use_vdom)
-      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: ["name==#{interface}", "vdom==#{vdom}"] }).results.find do |i|
-        i.vdom == vdom && i.name == interface
-      end
-    end
-
-    # Interface types: %w[vlan physical aggregate tunnel]
-    def interfaces(vdom = use_vdom, *interface_types)
-      interface_types = %w[vlan physical aggregate tunnel] if interface_types.empty?
-      cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: "vdom==#{vdom}" }).results.select do |n|
-        interface_types.include?(n.type) && n.vdom == vdom
-      end
-    end
-
-    #vpn ipsec
-    %w[phase1 phase1_interface phase2 phase2_interface forticlient].each do |name|
-      define_method('vpn_ipsec_' + name) do |vdom = use_vdom|
-        cmdb_get(path: 'vpn.ipsec', name: name.gsub('_', '-'), vdom: vdom)
-      end
-    end
-
-    #router
-    %w[static policy ospf bgp isis rip].each do |name|
-      define_method('router_' + name) do |vdom = use_vdom|
-        cmdb_get(path: 'router', name: name, vdom: vdom)
-      end
-    end
-
-
-    private :client
-
     private
 
       def url_schema=(schema)
         @url_schema = (schema == 'http' ? 'http' : 'https')
+      end
+
+      def https?
+        url_schema == 'https'
       end
 
       def new_httpclient
@@ -141,7 +102,7 @@ module FGT
         end
         client = HTTPClient.new(nil)
         client.set_cookie_store('/dev/null')
-        client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE if url_schema == 'https'
+        client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE if https?
         client
       end
 
@@ -170,7 +131,7 @@ module FGT
       def request(method, path, params = {})
         retries ||= retry_counter
         url = "#{url_schema}://#{ip}:#{port}/#{path}"
-        Timeout::timeout(timeout) do
+        Timeout.timeout(timeout) do
           begin
             login
             if method == 'get'
@@ -202,7 +163,7 @@ module FGT
 
       def login
         retries ||= retry_counter
-        Timeout::timeout(timeout) do
+        Timeout.timeout(timeout) do
           begin
             url = "https://#{ip}:#{port}/logincheck"
             params = { username: username, secretkey: secretkey }
@@ -222,7 +183,7 @@ module FGT
 
       def logout
         retries = retry_counter
-        Timeout::timeout(@timeout) do
+        Timeout.timeout(@timeout) do
           begin
             url = "https://#{@ip}:#{@port}/logout"
             client.get(url)
