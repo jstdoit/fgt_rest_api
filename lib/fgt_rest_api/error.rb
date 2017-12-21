@@ -18,3 +18,6 @@ class CMDBNameError < StandardError; end
 class CMDBMKeyError < StandardError; end
 class CMDBChildNameError < StandardError; end
 class CMDBChildMKeyError < StandardError; end
+class NotAnIPError < StandardError; end
+class FGTAddressTypeError < StandardError; end
+class FGTVIPTypeError < StandardError; end

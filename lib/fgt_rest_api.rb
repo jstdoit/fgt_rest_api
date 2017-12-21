@@ -1,6 +1,8 @@
 require 'timeout'
 require 'socket'
 require 'json'
+require 'netaddr'
+require 'set'
 require 'httpclient'
 
 require 'fgt_rest_api/version'

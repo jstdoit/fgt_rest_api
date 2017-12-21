@@ -15,7 +15,10 @@ module FGT
 
     end
 
-    attr_reader(:proxy, :use_proxy, :url_schema)
+    attr_reader(
+      :proxy, :use_proxy,
+      :url_schema, :inst_var_refreshable
+    )
 
     attr_accessor(
       :api_version, :ip, :port,
@@ -85,6 +88,13 @@ module FGT
     end
 
     private
+
+      # memoize db/cache results in instance variable dynamically
+      def memoize_results(key)
+        (@inst_var_refreshable || @inst_var_refreshable = Set.new) << key
+        return instance_variable_get(key) if instance_variable_defined?(key)
+        instance_variable_set(key, yield)
+      end
 
       def url_schema=(schema)
         @url_schema = (schema == 'http' ? 'http' : 'https')
