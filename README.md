@@ -1,4 +1,4 @@
-# FGT::RestApi
+# FGT::RestApi v0.0.6
 
 Welcome to fgt_rest_api! In this directory, you'll find the files you need to be able to package up fgt_rest_api into a gem. Put your Ruby code in the file `lib/fgt_rest_api`. To experiment with that code, run `bin/console` for an interactive prompt.
 
@@ -12,7 +12,7 @@ This gem has not been released to rubygems, yet. There is much work to do on doc
 
 Checkout the tree from https://github.com/fuegito/fgt_rest_api.git.
 Chdir in the repo-dir and do a "rake build".
-After that, do "gem install pkg/fgt_rest_api-<VERSION>.gem".
+After that, do "gem install pkg/fgt_rest_api-0.0.6.gem".
 Now you can use this gem as described below in 'Usage'.
 
 
