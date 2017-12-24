@@ -1,12 +1,8 @@
 # FGT::RestApi v0.0.6
 
-Welcome to fgt_rest_api! In this directory, you'll find the files you need to be able to package up fgt_rest_api into a gem. Put your Ruby code in the file `lib/fgt_rest_api`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Welcome to fgt_rest_api!
 
 ## Installation
-
-### current release
 
 This gem has not been released to rubygems, yet. There is much work to do on documentation and some refactoring as well.
 
@@ -15,40 +11,36 @@ Chdir in the repo-dir and do a "rake build".
 After that, do "gem install pkg/fgt_rest_api-0.0.6.gem".
 Now you can use this gem as described below in 'Usage'.
 
-
-### This Part is for later usage (1.0.0)
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'fgt_rest_api'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install fgt_rest_api
-
 ## Usage
 
 Run IRB and:
 
     require 'fgt_rest_api'
     demo = FGT::RestApi.new(ip: 'fortigate.fortidemo.com', port: 443, username: 'demo', password: 'demo')
-    demo.timeout = 10
-    addresses = demo.cmdb_get(path: 'firewall', name: 'address')['results']
+    demo.timeout = 10 #  -> default is 5s
+    addresses = demo.cmdb_get(path: 'firewall', name: 'address').results
     addresses.first.type    -> "wildcard-fqdn"
     addresses.first['type'] -> "wildcard-fqdn"
     addresses.first[:type]  -> "wildcard-fqdn"
 
 You can access the objects with the original key delivered from the JSON API (object['start-ip']) or with smybols (object[:start_ip]) or with attribute methods (object.start_ip).
+Note that you need to replace dashes with underscores in the latter two.
 
-## Development
+## Extensions
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+I created some extensions for FGT::RestApi. These will provide you shortcut methods for accessing some config objects.
+Have a look at the policy_and_object extension.
+
+### system.rb
+
+### interface.rb
+
+### ipsec.rb
+
+### router.rb
+
+### policy_and_object.rb
+
 
 ## Contributing
 
