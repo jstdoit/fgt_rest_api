@@ -90,6 +90,7 @@ module FGT
           (NetAddr::CIDR.create(o.start_ip)..NetAddr::CIDR.create(o.end_ip)).cover?(addr)
         elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/ === o.type
           next
+        # TODO: add more types, maybe?
         else
           raise(FGTAddressTypeError, "this is neither an iprange nor an ipmask: #{o.inspect}")
         end
@@ -118,6 +119,7 @@ module FGT
                 raise(FGTVIPTypeError, "this is neither a static-nat nor a server-load-balance type: #{o.inspect}")
               end
             )
+        # TODO: get more specific here...
         rescue ArgumentError
           puts o.inspect
           raise
@@ -146,10 +148,8 @@ module FGT
       objects << find_group_for_object(object, vdom)
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
-          (
-            (p.srcaddr.map(&:q_origin_key).include? o.name) ||
-              (p.poolname.map(&:q_origin_key).nil? ? false : (p.poolname.map(&:q_origin_key).include? o.name))
-          )
+          (p.srcaddr.map(&:q_origin_key).include? o.name) ||
+            (p.poolname.map(&:q_origin_key).nil? ? false : (p.poolname.map(&:q_origin_key).include? o.name))
         end
       end
       rules.flatten.uniq.compact
@@ -162,9 +162,7 @@ module FGT
       objects << find_group_for_object(object, vdom)
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
-          (
-            (p.dstaddr.map(&:q_origin_key).include? o.name)
-          )
+          (p.dstaddr.map(&:q_origin_key).include? o.name)
         end
       end
       rules.flatten.uniq.compact
