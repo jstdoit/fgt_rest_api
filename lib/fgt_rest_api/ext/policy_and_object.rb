@@ -1,25 +1,30 @@
 module FGT
   class RestApi
 
-    %w( address addrgrp vip vipgrp policy ippool ).each do |name|
+    %w[address addrgrp vip vipgrp policy ippool].each do |name|
       define_method(name) do |vdom = use_vdom|
         memoize_results("@#{name}_response") do
-          cmdb_get(path: 'firewall', name: name, vdom: vdom)[:results]
+          cmdb_get(path: 'firewall', name: name, vdom: vdom).results
         end
       end
     end
 
-    %w( custom group ).each do |name|
+    %w[custom group].each do |name|
       define_method('service_' + name) do |vdom = use_vdom|
         memoize_results("@#{name}_response") do
-          cmdb_get(path: 'firewall.service', name: name, vdom: vdom)[:results]
+          cmdb_get(path: 'firewall.service', name: name, vdom: vdom).results
         end
       end
     end
 
-    def clear_cache(inst_var = nil)
-      set_inst_var = -> (i) { remove_instance_variable(i) if instance_variable_defined?(i) && @inst_var_refreshable.delete(i) }
-      inst_var.nil? ? @inst_var_refreshable.each(&set_inst_var) : set_inst_var.call(inst_var) && @inst_var_refreshable
+    def clear_cache_var(ivar)
+      return nil unless instance_variable_defined?(ivar) && @inst_var_refreshable.include?(ivar)
+      remove_instance_variable(ivar)
+      @inst_var_refreshable.tap { |a| a.delete(ivar) }
+    end
+
+    def clear_cache(ivar = nil)
+      ivar.nil? ? @inst_var_refreshable.each(&method(:clear_cache_var)) : clear_cache_var(ivar)
     end
 
     def policy_object(object_name: nil, vdom: use_vdom)
@@ -55,7 +60,7 @@ module FGT
     end
 
     def ipnetwork(vdom = use_vdom)
-      address(vdom).select { |o| o.type == 'ipmask' && not(/255.255.255.255$/.match(o.subnet)) }
+      address(vdom).select { |o| o.type == 'ipmask' && !(/255.255.255.255$/.match(o.subnet)) }
     end
 
     def fqdn(vdom = use_vdom)
@@ -66,9 +71,8 @@ module FGT
       address(vdom).select { |o| o.type == 'wildcard-fqdn' }
     end
 
-
     def find_group_for_object(object, vdom = use_vdom)
-      groups = (vipgrp(vdom) + addrgrp(vdom)).select {|o| o.member.map { |m| m.q_origin_key }.include?(object) }
+      groups = (vipgrp(vdom) + addrgrp(vdom)).select { |o| o.member.map(&:q_origin_key).include?(object) }
       groups.each do |group|
         grouped_groups = find_group_for_object(group[:name], vdom)
         next if grouped_groups.empty?
@@ -83,7 +87,7 @@ module FGT
         if o.type == 'ipmask'
           NetAddr::CIDR.create(o.subnet).contains?(addr) || (NetAddr::CIDR.create(o.subnet) == addr)
         elsif o.type == 'iprange'
-          (NetAddr::CIDR.create(o.start_ip)..NetAddr::CIDR.create(o.end_ip)).include?(addr)
+          (NetAddr::CIDR.create(o.start_ip)..NetAddr::CIDR.create(o.end_ip)).cover?(addr)
         elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/ === o.type
           next
         else
@@ -99,21 +103,21 @@ module FGT
           (
             NetAddr::CIDR.create(o.extip) == addr
           ) ||
-          (
-            if o.type == 'static-nat'
-              o.mappedip.find do |m|
-                begin
-                  NetAddr::CIDR.create(m.range).contains?(addr) || NetAddr::CIDR.create(m.range) == addr
-                rescue NetAddr::ValidationError
-                  (NetAddr::CIDR.create(m.range.split(/\s+|-/)[0])..NetAddr::CIDR.create(m.range.split(/\s+|-/)[1])).include?(addr)
+            (
+              if o.type == 'static-nat'
+                o.mappedip.find do |m|
+                  begin
+                    NetAddr::CIDR.create(m.range).contains?(addr) || NetAddr::CIDR.create(m.range) == addr
+                  rescue NetAddr::ValidationError
+                    (NetAddr::CIDR.create(m.range.split(/\s+|-/)[0])..NetAddr::CIDR.create(m.range.split(/\s+|-/)[1])).cover?(addr)
+                  end
                 end
+              elsif o.type == 'server-load-balance'
+                o.realservers.find { |r| NetAddr::CIDR.create(r.ip) == addr }
+              else
+                raise(FGTVIPTypeError, "this is neither a static-nat nor a server-load-balance type: #{o.inspect}")
               end
-            elsif o.type == 'server-load-balance'
-              o.realservers.find { |r| NetAddr::CIDR.create(r.ip) == addr }
-            else
-              raise(FGTVIPTypeError, "this is neither a static-nat nor a server-load-balance type: #{o.inspect}")
-            end
-          )
+            )
         rescue ArgumentError
           puts o.inspect
           raise
@@ -123,9 +127,9 @@ module FGT
 
     def find_ippool_object_by_address(addr, vdom = use_vdom)
       addr = NetAddr::CIDR.create(addr)
-      objects = ippool(vdom).select do |o|
-        (NetAddr::CIDR.create(o.startip)..NetAddr::CIDR.create(o.endip)).include?(addr) ||
-        (NetAddr::CIDR.create(o.source_startip)..NetAddr::CIDR.create(o.source_endip)).include?(addr)
+      ippool(vdom).select do |o|
+        (NetAddr::CIDR.create(o.startip)..NetAddr::CIDR.create(o.endip)).cover?(addr) ||
+          (NetAddr::CIDR.create(o.source_startip)..NetAddr::CIDR.create(o.source_endip)).include?(addr)
       end.uniq
     end
 
@@ -143,8 +147,8 @@ module FGT
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
           (
-            (p.srcaddr.map { |m| m.q_origin_key }.include? o.name) ||
-            (p.poolname.map { |m| m.q_origin_key }.nil? ? false : (p.poolname.map { |m| m.q_origin_key }.include? o.name))
+            (p.srcaddr.map(&:q_origin_key).include? o.name) ||
+              (p.poolname.map(&:q_origin_key).nil? ? false : (p.poolname.map(&:q_origin_key).include? o.name))
           )
         end
       end
@@ -159,7 +163,7 @@ module FGT
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
           (
-            (p.dstaddr.map { |m| m.q_origin_key }.include? o.name)
+            (p.dstaddr.map(&:q_origin_key).include? o.name)
           )
         end
       end
@@ -185,10 +189,10 @@ module FGT
     def search_object(*object_re, vdom: use_vdom, comment: false)
       object_re = Array(object_re).map { |re| re.is_a?(Regexp) ? re : Regexp.new(re.gsub(/\./, '\.')) }
       object_re = Regexp.union(object_re)
-      with_name = -> (o) { object_re === o.name }
-      with_name_and_comment = -> (o) { (object_re === o.name) || (object_re === o.comment) }
+      with_name = ->(o) { object_re === o.name }
+      with_name_and_comment = ->(o) { (object_re === o.name) || (object_re === o.comment) }
       search = comment ? with_name_and_comment : with_name
-      with_groups = -> (o) { [o] << find_group_for_object(o.name, vdom) }
+      with_groups = ->(o) { [o] << find_group_for_object(o.name, vdom) }
       policy_object.select(&search).map(&with_groups).flatten.uniq.compact
     end
 
