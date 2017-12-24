@@ -2,7 +2,7 @@ module FGT
   class RestApi
 
     def vdoms
-      cmdb_get(path: 'system', name: 'vdom').results.map { |v| v.name }
+      cmdb_get(path: 'system', name: 'vdom').results.map(&:name)
     end
 
     def hostname
