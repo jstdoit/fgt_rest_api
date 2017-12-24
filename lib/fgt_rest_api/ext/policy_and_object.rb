@@ -26,7 +26,7 @@ module FGT
       if object_name.nil?
         address(vdom) + addrgrp(vdom) + vip(vdom) + vipgrp(vdom) + ippool(vdom)
       else
-        (address(vdom) + addrgrp(vdom) + vip(vdom) + vipgrp(vdom) + ippool(vdom)).find { |o| o[:name] == object_name }
+        (address(vdom) + addrgrp(vdom) + vip(vdom) + vipgrp(vdom) + ippool(vdom)).find { |o| o.name == object_name }
       end
     end
 
@@ -39,36 +39,36 @@ module FGT
     end
 
     def iprange(vdom = use_vdom)
-      address(vdom).select { |o| o[:type] == 'iprange' }
+      address(vdom).select { |o| o.type == 'iprange' }
     end
 
     def vip_loadbalancer(vdom = use_vdom)
-      vip(vdom).select { |o| o[:type] == 'server-load-balance' }
+      vip(vdom).select { |o| o.type == 'server-load-balance' }
     end
 
     def vip_dnat(vdom = use_vdom)
-      vip(vdom).select { |o| o[:type] == 'static-nat' }
+      vip(vdom).select { |o| o.type == 'static-nat' }
     end
 
     def ipaddress(vdom = use_vdom)
-      address(vdom).select { |o| o[:type] == 'ipmask' && /255.255.255.255$/.match(o[:subnet]) }
+      address(vdom).select { |o| o.type == 'ipmask' && /255.255.255.255$/.match(o.subnet) }
     end
 
     def ipnetwork(vdom = use_vdom)
-      address(vdom).select { |o| o[:type] == 'ipmask' && not(/255.255.255.255$/.match(o[:subnet])) }
+      address(vdom).select { |o| o.type == 'ipmask' && not(/255.255.255.255$/.match(o.subnet)) }
     end
 
     def fqdn(vdom = use_vdom)
-      address(vdom).select { |o| o[:type] == 'fqdn' }
+      address(vdom).select { |o| o.type == 'fqdn' }
     end
 
     def wildcard_fqdn(vdom = use_vdom)
-      address(vdom).select { |o| o[:type] == 'wildcard-fqdn' }
+      address(vdom).select { |o| o.type == 'wildcard-fqdn' }
     end
 
 
     def find_group_for_object(object, vdom = use_vdom)
-      groups = (vipgrp(vdom) + addrgrp(vdom)).select {|o| o[:member].map { |m| m[:q_origin_key] }.include?(object) }
+      groups = (vipgrp(vdom) + addrgrp(vdom)).select {|o| o.member.map { |m| m.q_origin_key }.include?(object) }
       groups.each do |group|
         grouped_groups = find_group_for_object(group[:name], vdom)
         next if grouped_groups.empty?
@@ -80,11 +80,11 @@ module FGT
     def find_address_object_by_address(addr, vdom = use_vdom)
       addr = NetAddr::CIDR.create(addr)
       address(vdom).select do |o|
-        if o[:type] == 'ipmask'
-          NetAddr::CIDR.create(o[:subnet]).contains?(addr) || (NetAddr::CIDR.create(o[:subnet]) == addr)
-        elsif o[:type] == 'iprange'
-          (NetAddr::CIDR.create(o[:start_ip])..NetAddr::CIDR.create(o[:end_ip])).include?(addr)
-        elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/ === o[:type]
+        if o.type == 'ipmask'
+          NetAddr::CIDR.create(o.subnet).contains?(addr) || (NetAddr::CIDR.create(o.subnet) == addr)
+        elsif o.type == 'iprange'
+          (NetAddr::CIDR.create(o.start_ip)..NetAddr::CIDR.create(o.end_ip)).include?(addr)
+        elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/ === o.type
           next
         else
           raise(FGTAddressTypeError, "this is neither an iprange nor an ipmask: #{o.inspect}")
@@ -97,19 +97,19 @@ module FGT
       vip(vdom).select do |o|
         begin
           (
-            NetAddr::CIDR.create(o[:extip]) == addr
+            NetAddr::CIDR.create(o.extip) == addr
           ) ||
           (
-            if o[:type] == 'static-nat'
-              o[:mappedip].find do |m|
+            if o.type == 'static-nat'
+              o.mappedip.find do |m|
                 begin
-                  NetAddr::CIDR.create(m[:range]).contains?(addr) || NetAddr::CIDR.create(m[:range]) == addr
+                  NetAddr::CIDR.create(m.range).contains?(addr) || NetAddr::CIDR.create(m.range) == addr
                 rescue NetAddr::ValidationError
-                  (NetAddr::CIDR.create(m[:range].split(/\s+|-/)[0])..NetAddr::CIDR.create(m[:range].split(/\s+|-/)[1])).include?(addr)
+                  (NetAddr::CIDR.create(m.range.split(/\s+|-/)[0])..NetAddr::CIDR.create(m.range.split(/\s+|-/)[1])).include?(addr)
                 end
               end
-            elsif o[:type] == 'server-load-balance'
-              o[:realservers].find { |r| NetAddr::CIDR.create(r[:ip]) == addr }
+            elsif o.type == 'server-load-balance'
+              o.realservers.find { |r| NetAddr::CIDR.create(r.ip) == addr }
             else
               raise(FGTVIPTypeError, "this is neither a static-nat nor a server-load-balance type: #{o.inspect}")
             end
@@ -124,14 +124,14 @@ module FGT
     def find_ippool_object_by_address(addr, vdom = use_vdom)
       addr = NetAddr::CIDR.create(addr)
       objects = ippool(vdom).select do |o|
-        (NetAddr::CIDR.create(o[:startip])..NetAddr::CIDR.create(o[:endip])).include?(addr) ||
-        (NetAddr::CIDR.create(o[:source_startip])..NetAddr::CIDR.create(o[:source_endip])).include?(addr)
+        (NetAddr::CIDR.create(o.startip)..NetAddr::CIDR.create(o.endip)).include?(addr) ||
+        (NetAddr::CIDR.create(o.source_startip)..NetAddr::CIDR.create(o.source_endip)).include?(addr)
       end.uniq
     end
 
     def find_object_by_address(addr, vdom = use_vdom)
       objects = find_address_object_by_address(addr, vdom) + find_vip_object_by_address(addr, vdom) + find_ippool_object_by_address(addr, vdom)
-      objects << objects.map { |o| find_group_for_object(o[:name]) }.uniq.flatten
+      objects << objects.map { |o| find_group_for_object(o.name) }.uniq.flatten
       objects.flatten.uniq.compact
     end
 
@@ -143,8 +143,8 @@ module FGT
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
           (
-            (p[:srcaddr].map { |m| m[:q_origin_key] }.include? o[:name]) ||
-            (p[:poolname].map { |m| m[:q_origin_key] }.nil? ? false : (p[:poolname].map { |m| m[:q_origin_key] }.include? o[:name]))
+            (p.srcaddr.map { |m| m.q_origin_key }.include? o.name) ||
+            (p.poolname.map { |m| m.q_origin_key }.nil? ? false : (p.poolname.map { |m| m.q_origin_key }.include? o.name))
           )
         end
       end
@@ -159,7 +159,7 @@ module FGT
       objects.flatten.compact.uniq.each do |o|
         rules << policy(vdom).select do |p|
           (
-            (p[:dstaddr].map { |m| m[:q_origin_key] }.include? o[:name])
+            (p.dstaddr.map { |m| m.q_origin_key }.include? o.name)
           )
         end
       end
@@ -171,24 +171,24 @@ module FGT
     end
 
     def find_src_policy_for_address(addr, vdom = use_vdom)
-      find_object_by_address(addr, vdom).map { |o| find_src_policy_for_object(o[:name], vdom) }.flatten.uniq
+      find_object_by_address(addr, vdom).map { |o| find_src_policy_for_object(o.name, vdom) }.flatten.uniq
     end
 
     def find_dst_policy_for_address(addr, vdom = use_vdom)
-      find_object_by_address(addr, vdom).map { |o| find_dst_policy_for_object(o[:name], vdom) }.flatten.uniq
+      find_object_by_address(addr, vdom).map { |o| find_dst_policy_for_object(o.name, vdom) }.flatten.uniq
     end
 
     def find_policy_for_address(addr, vdom = use_vdom)
-      find_object_by_address(addr, vdom).map { |o| find_policy_for_object(o[:name], vdom) }.flatten.uniq
+      find_object_by_address(addr, vdom).map { |o| find_policy_for_object(o.name, vdom) }.flatten.uniq
     end
 
     def search_object(*object_re, vdom: use_vdom, comment: false)
       object_re = Array(object_re).map { |re| re.is_a?(Regexp) ? re : Regexp.new(re.gsub(/\./, '\.')) }
       object_re = Regexp.union(object_re)
-      with_name = -> (o) { object_re === o[:name] }
-      with_name_and_comment = -> (o) { (object_re === o[:name]) || (object_re === o[:comment]) }
+      with_name = -> (o) { object_re === o.name }
+      with_name_and_comment = -> (o) { (object_re === o.name) || (object_re === o.comment) }
       search = comment ? with_name_and_comment : with_name
-      with_groups = -> (o) { [o] << find_group_for_object(o[:name], vdom) }
+      with_groups = -> (o) { [o] << find_group_for_object(o.name, vdom) }
       policy_object.select(&search).map(&with_groups).flatten.uniq.compact
     end
 
