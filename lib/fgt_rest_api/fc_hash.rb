@@ -6,7 +6,7 @@ module FGT
       method_name = key.to_s.tr('-', '_')
       return nil if respond_to?(method_name.to_sym)
       define_singleton_method(method_name) { value }
-      define_singleton_method("#{method_name}=") { |value| self[key] = value }
+      define_singleton_method("#{method_name}=") { |v| self[key] = v }
     end
 
     def []=(key, value)
@@ -23,6 +23,7 @@ module FGT
 
     def [](key)
       raise(ArgumentError, "key needs start with downcase: >>#{key}<<") unless key.to_s[0] == key.to_s[0].downcase
+      if key.is_a?(String)
         super(key)
       elsif key.is_a?(Symbol)
         super(key.to_s) || super(key.to_s.tr('_', '-'))
