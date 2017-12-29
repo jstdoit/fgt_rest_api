@@ -2,14 +2,6 @@ module FGT
 
   class FCHash < ::Hash
 
-    def attribute_methods(key, value)
-      method_name = key.to_s.tr('-', '_')
-      return value if respond_to?(method_name.to_sym)
-      define_singleton_method(method_name) { fetch(key) }
-      define_singleton_method("#{method_name}=") { |v| store(key, v) }
-      value
-    end
-
     def []=(key, value)
       raise(ArgumentError, "key needs start with downcase letter: >>#{key}<<") unless key[0] == key[0].downcase
       if key.is_a?(String)
@@ -31,6 +23,16 @@ module FGT
       else
         raise(ArgumentError, "'key needs to be a string and key needs start with downcase letter: >>#{key.inspect}<<") unless key.is_a?(String)
       end
+    end
+
+    private
+
+    def attribute_methods(key, value)
+      method_name = key.to_s.tr('-', '_')
+      return value if respond_to?(method_name.to_sym)
+      define_singleton_method(method_name) { fetch(key) }
+      define_singleton_method("#{method_name}=") { |v| store(key, v) }
+      value
     end
 
   end
