@@ -4,14 +4,14 @@ module FGT
 
     def attribute_methods(key, value)
       method_name = key.to_s.tr('-', '_')
-      return nil if respond_to?(method_name.to_sym)
-      define_singleton_method(method_name) { value }
-      define_singleton_method("#{method_name}=") { |v| self[key] = v }
+      return value if respond_to?(method_name.to_sym)
+      define_singleton_method(method_name) { fetch(key) }
+      define_singleton_method("#{method_name}=") { |v| store(key, v) }
+      value
     end
 
     def []=(key, value)
       raise(ArgumentError, "key needs start with downcase letter: >>#{key}<<") unless key[0] == key[0].downcase
-      attribute_methods(key, value)
       if key.is_a?(String)
         super(key, value)
       elsif key.is_a?(Symbol)
@@ -19,6 +19,7 @@ module FGT
       else
         raise(ArgumentError, "'key needs to be a string and key needs start with downcase letter: >>#{key.inspect}<<") unless key.is_a?(String)
       end
+      attribute_methods(key, value)
     end
 
     def [](key)
