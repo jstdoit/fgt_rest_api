@@ -8,7 +8,7 @@ module FGT
     end
 
     # Interface types: %w[vlan physical aggregate tunnel]
-    def interfaces(vdom = use_vdom, *interface_types)
+    def interface(vdom = use_vdom, *interface_types)
       interface_types = %w[vlan physical aggregate tunnel] if interface_types.empty?
       cmdb_get(path: 'system', name: 'interface', vdom: vdom, params: { filter: "vdom==#{vdom}" }).results.select do |n|
         interface_types.include?(n.type) && n.vdom == vdom
