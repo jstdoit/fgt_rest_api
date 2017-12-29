@@ -162,7 +162,7 @@ module FGT
             STDERR.puts "response_body: #{response.body}" if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
-          rescue Java::JavaNet::SocketException, SocketError => e
+          rescue SocketError => e
             STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
             retry if (retries -= 1) > 0
             raise # TooManyRetriesError
