@@ -89,122 +89,122 @@ module FGT
 
     private
 
-      # memoize db/cache results in instance variable dynamically
-      def memoize_results(key)
-        (@inst_var_refreshable || @inst_var_refreshable = Set.new) << key
-        return instance_variable_get(key) if instance_variable_defined?(key)
-        instance_variable_set(key, yield)
-      end
+    # memoize db/cache results in instance variable dynamically
+    def memoize_results(key)
+      (@inst_var_refreshable || @inst_var_refreshable = Set.new) << key
+      return instance_variable_get(key) if instance_variable_defined?(key)
+      instance_variable_set(key, yield)
+    end
 
-      def url_schema=(schema)
-        @url_schema = (schema == 'http' ? 'http' : 'https')
-      end
+    def url_schema=(schema)
+      @url_schema = (schema == 'http' ? 'http' : 'https')
+    end
 
-      def https?
-        url_schema == 'https'
-      end
+    def https?
+      url_schema == 'https'
+    end
 
-      def new_httpclient
-        unless use_proxy
-          ENV['http_proxy'] = ''
-          raise FGTPortNotOpenError unless self.class.tcp_port_open?(ip, port, timeout)
-        else
-          ENV['http_proxy'] = proxy
-        end
-        client = HTTPClient.new(nil)
-        client.set_cookie_store('/dev/null')
-        client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE if https?
-        client
+    def new_httpclient
+      unless use_proxy
+        ENV['http_proxy'] = ''
+        raise FGTPortNotOpenError unless self.class.tcp_port_open?(ip, port, timeout)
+      else
+        ENV['http_proxy'] = proxy
       end
+      client = HTTPClient.new(nil)
+      client.set_cookie_store('/dev/null')
+      client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE if https?
+      client
+    end
 
-      def cmdb(request_method: 'get', path:, name:, mkey: '', child_name: '', child_mkey: '', vdom: use_vdom, params: {})
-        raise(SafeModeActiveError) if (request_method != 'get' && safe_mode)
-        raise(CMDBPathError) unless /^\w*\.?\w+$/ === path
-        raise(CMDBNameError) unless /^[^\/]+$/ === name
-        raise(CMDBMKeyError) unless /^[^\/]*$/ === mkey
-        raise(CMDBChildNameError) unless /^[^\/]*$/ === child_name
-        raise(CMDBChildMKeyError) unless /^[^\/]*$/ === child_mkey
-        url_path = "api/#{api_version}/cmdb/#{path}/#{name}/"
-        unless mkey.empty?
-          url_path += "#{mkey}/"
-          unless child_name.empty?
-            url_path += "#{child_name}/"
-            unless child_mkey.empty?
-              url_path += "#{child_mkey}/"
-            end
-          end
-        end
-        url_path += "?vdom=#{vdom}" if %w( put delete ).include?(request_method)
-        params[:vdom] = vdom if %w( post get ).include?(request_method)
-        request(request_method, url_path, params)
-      end
-
-      def request(method, path, params = {})
-        retries ||= retry_counter
-        url = "#{url_schema}://#{ip}:#{port}/#{path}"
-        Timeout.timeout(timeout) do
-          begin
-            login
-            if method == 'get'
-              response = client.get(url, params)
-            elsif method == 'post'
-              response = client.post(url, params.to_json, 'X-CSRFTOKEN' => ccsrftoken)
-            elsif method == 'put'
-              response = client.put(url, body: params.to_json, header: {'X-CSRFTOKEN' => ccsrftoken})
-            elsif method == 'delete'
-              response = client.delete(url, query: params, header: {'X-CSRFTOKEN' => ccsrftoken})
-            else
-              raise HTTPMethodUnknownError
-            end
-            JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
-          rescue JSON::ParserError => e
-            STDERR.puts "#{e.inspect} => #{e.backtrace}" if debug
-            STDERR.puts "response_body: #{response.body}" if debug
-            retry if (retries -= 1) > 0
-            raise # TooManyRetriesError
-          rescue SocketError => e
-            STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
-            retry if (retries -= 1) > 0
-            raise # TooManyRetriesError
-          ensure
-            logout
+    def cmdb(request_method: 'get', path:, name:, mkey: '', child_name: '', child_mkey: '', vdom: use_vdom, params: {})
+      raise(SafeModeActiveError) if (request_method != 'get' && safe_mode)
+      raise(CMDBPathError) unless /^\w*\.?\w+$/ === path
+      raise(CMDBNameError) unless /^[^\/]+$/ === name
+      raise(CMDBMKeyError) unless /^[^\/]*$/ === mkey
+      raise(CMDBChildNameError) unless /^[^\/]*$/ === child_name
+      raise(CMDBChildMKeyError) unless /^[^\/]*$/ === child_mkey
+      url_path = "api/#{api_version}/cmdb/#{path}/#{name}/"
+      unless mkey.empty?
+        url_path += "#{mkey}/"
+        unless child_name.empty?
+          url_path += "#{child_name}/"
+          unless child_mkey.empty?
+            url_path += "#{child_mkey}/"
           end
         end
       end
+      url_path += "?vdom=#{vdom}" if %w( put delete ).include?(request_method)
+      params[:vdom] = vdom if %w( post get ).include?(request_method)
+      request(request_method, url_path, params)
+    end
 
-      def login
-        retries ||= retry_counter
-        Timeout.timeout(timeout) do
-          begin
-            url = "https://#{ip}:#{port}/logincheck"
-            params = { username: username, secretkey: secretkey }
-            client.post(url, params)
-          rescue Java::JavaNet::SocketException, SocketError => e
-            STDERR.puts('#login: ' + e.inspect) if debug
-            retry if (retries -= 1) > 0
-            raise # TooManyRetriesError
-          rescue JSON::ParserError => e
-            STDERR.puts('#login post: JSON::ParserError' + e.inspect) if debug
-            retry if (retries -= 1) > 0
-            raise # TooManyRetriesError
+    def request(method, path, params = {})
+      retries ||= retry_counter
+      url = "#{url_schema}://#{ip}:#{port}/#{path}"
+      Timeout.timeout(timeout) do
+        begin
+          login
+          if method == 'get'
+            response = client.get(url, params)
+          elsif method == 'post'
+            response = client.post(url, params.to_json, 'X-CSRFTOKEN' => ccsrftoken)
+          elsif method == 'put'
+            response = client.put(url, body: params.to_json, header: {'X-CSRFTOKEN' => ccsrftoken})
+          elsif method == 'delete'
+            response = client.delete(url, query: params, header: {'X-CSRFTOKEN' => ccsrftoken})
+          else
+            raise HTTPMethodUnknownError
           end
-          self.ccsrftoken = client.cookies.find { |c| c.name == 'ccsrftoken' }
+          JSON.parse(response.body.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''), object_class: FGT::FCHash)
+        rescue JSON::ParserError => e
+          STDERR.puts "#{e.inspect} => #{e.backtrace}" if debug
+          STDERR.puts "response_body: #{response.body}" if debug
+          retry if (retries -= 1) > 0
+          raise # TooManyRetriesError
+        rescue SocketError => e
+          STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
+          retry if (retries -= 1) > 0
+          raise # TooManyRetriesError
+        ensure
+          logout
         end
       end
+    end
 
-      def logout
-        retries = retry_counter
-        Timeout.timeout(@timeout) do
-          begin
-            url = "https://#{@ip}:#{@port}/logout"
-            client.get(url)
-          rescue Java::JavaNet::SocketException, SocketError => e
-            STDERR.puts('#logout: ' + e.inspect) if debug
-            retry if (retries -= 1) > 0
-            raise # TooManyRetriesError
-          end
-          client.cookies.clear
+    def login
+      retries ||= retry_counter
+      Timeout.timeout(timeout) do
+        begin
+          url = "https://#{ip}:#{port}/logincheck"
+          params = { username: username, secretkey: secretkey }
+          client.post(url, params)
+        rescue Java::JavaNet::SocketException, SocketError => e
+          STDERR.puts('#login: ' + e.inspect) if debug
+          retry if (retries -= 1) > 0
+          raise # TooManyRetriesError
+        rescue JSON::ParserError => e
+          STDERR.puts('#login post: JSON::ParserError' + e.inspect) if debug
+          retry if (retries -= 1) > 0
+          raise # TooManyRetriesError
         end
+        self.ccsrftoken = client.cookies.find { |c| c.name == 'ccsrftoken' }
       end
+    end
+
+    def logout
+      retries = retry_counter
+      Timeout.timeout(@timeout) do
+        begin
+          url = "https://#{@ip}:#{@port}/logout"
+          client.get(url)
+        rescue Java::JavaNet::SocketException, SocketError => e
+          STDERR.puts('#logout: ' + e.inspect) if debug
+          retry if (retries -= 1) > 0
+          raise # TooManyRetriesError
+        end
+        client.cookies.clear
+      end
+    end
   end
 end
