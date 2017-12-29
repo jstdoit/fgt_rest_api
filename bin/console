@@ -15,6 +15,7 @@ options = {
   safe_mode: false
 }
 @demo = FGT::RestApi.new(options)
+@demo.timeout = 10 # fortidemo is not very fast in responding...
 
 # (If you use this, don't forget to add pry to your Gemfile!)
 # require "pry"
