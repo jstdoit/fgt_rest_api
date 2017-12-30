@@ -30,7 +30,6 @@ module FGT
     def attribute_methods(key, value)
       getter_method(key)
       setter_method(key, value)
-      method_name = key.to_s.tr('-', '_')
       value
     end
 
