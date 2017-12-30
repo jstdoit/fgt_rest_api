@@ -43,7 +43,7 @@ module FGT
     def setter_method(key, value)
       method_name = key.to_s.tr('-', '_') + '='
       return true if respond_to?(method_name.to_sym)
-      define_singleton_method("#{method_name}=") { |v| store(key, v) }
+      define_singleton_method(method_name) { |v| store(key, v) }
     end
 
   end
