@@ -160,12 +160,10 @@ module FGT
         rescue JSON::ParserError => e
           STDERR.puts "#{e.inspect} => #{e.backtrace}" if debug
           STDERR.puts "response_body: #{response.body}" if debug
-          retry if (retries -= 1) > 0
-          raise # TooManyRetriesError
+          (retries -= 1) > 0 ? retry : raise # TooManyRetriesError
         rescue SocketError => e
           STDERR.puts "SocketError: #{e.inspect} => #{e.backtrace}" if debug
-          retry if (retries -= 1) > 0
-          raise # TooManyRetriesError
+          (retries -= 1) > 0 ? retry : raise # TooManyRetriesError
         ensure
           logout
         end
@@ -179,14 +177,12 @@ module FGT
           url = "https://#{ip}:#{port}/logincheck"
           params = { username: username, secretkey: secretkey }
           client.post(url, params)
-        rescue Java::JavaNet::SocketException, SocketError => e
+        rescue SocketError => e
           STDERR.puts('#login: ' + e.inspect) if debug
-          retry if (retries -= 1) > 0
-          raise # TooManyRetriesError
+          (retries -= 1) > 0 ? retry : raise # TooManyRetriesError
         rescue JSON::ParserError => e
           STDERR.puts('#login post: JSON::ParserError' + e.inspect) if debug
-          retry if (retries -= 1) > 0
-          raise # TooManyRetriesError
+          (retries -= 1) > 0 ? retry : raise # TooManyRetriesError
         end
         self.ccsrftoken = client.cookies.find { |c| c.name == 'ccsrftoken' }
       end
@@ -198,10 +194,9 @@ module FGT
         begin
           url = "https://#{@ip}:#{@port}/logout"
           client.get(url)
-        rescue Java::JavaNet::SocketException, SocketError => e
+        rescue SocketError => e
           STDERR.puts('#logout: ' + e.inspect) if debug
-          retry if (retries -= 1) > 0
-          raise # TooManyRetriesError
+          (retries -= 1) > 0 ? retry : raise # TooManyRetriesError
         end
         client.cookies.clear
       end
