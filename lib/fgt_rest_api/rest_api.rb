@@ -31,7 +31,7 @@ module FGT
       api_version: 'v2',
       url_schema: 'https',
       ip:,
-      port: 4434,
+      port: 443,
       username:,
       password:,
       timeout: 5,
