@@ -40,10 +40,12 @@ Run IRB:
     irb(main):005:0> p addresses.first
     {"name"=>"*.google.com", "q_origin_key"=>"*.google.com", "uuid"=>"089fafbe-4d63-51e7-bd51-b41dc40375d1", "subnet"=>"0.0.0.0 0.0.0.0", "type"=>"wildcard-fqdn",     "start-ip"=>"0.0.0.0", "end-ip"=>"0.0.0.0", "fqdn"=>"*.google.com", "country"=>"", "wildcard-fqdn"=>"*.google.com", "cache-ttl"=>0, "wildcard"=>"0.0.0.0 0.0.0.0",  "sdn"=>"", "tenant"=>"", "organization"=>"", "epg-name"=>"", "subnet-name"=>"", "sdn-tag"=>"", "policy-group"=>"", "comment"=>"", "visibility"=>"enable",     "associated-interface"=>"", "color"=>0, "obj-id"=>0, "list"=>[], "tags"=>[], "allow-routing"=>"disable"}
 
-Accessing the attributes (set and get) is indifferent (attribute methods are generated on-the-fly); see lib/fc_hash.rb:
-    - addresses.first.type    --> "wildcard-fqdn"
-    - addresses.first['type'] --> "wildcard-fqdn"
-    - addresses.first[:type]  --> "wildcard-fqdn"
+Accessing the attributes (set and get) is indifferent (attribute methods are generated on-the-fly).
+
+- addresses.first.type    --> "wildcard-fqdn"
+- addresses.first['type'] --> "wildcard-fqdn"
+- addresses.first[:type]  --> "wildcard-fqdn"
+
 You can access the objects with the original key delivered from the JSON API (object['start-ip']) or with smybols (object[:start_ip]) or with attribute methods (object.start_ip).
 Note that you need to replace dashes with underscores in the latter two.
 
