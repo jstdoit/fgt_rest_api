@@ -21,19 +21,11 @@ Now you can use this gem as described below in 'Usage'.
 
 ## Usage
 
-### Monitor API
+    require 'fgt_rest_api'
+    api_object = FGT::RestApi.new(ip: <IP/HOSTNAME>, username: <USER>, password: <PASSWORD>)
 
-Methods for sending requests to the REST API:
---> See FortiGate REST-API Docu for more information about params.
-- monitor_get(<APIPATH>, {}) # you can ommit vdom-param, this is set anyway
-  - irb(main):001:0> demo.monitor_get('firewall/policy').results.first.last_used
-    => 1514745165
-- monitor_post(<APIPATH>, {}) # you can ommit vdom-param, this is set anyway
-- cmdb_get
-- cmdb_post
-- cmdb_put
-- cmdb_delete
-
+There is no permanent connection made to the FortiGate device. Each API-call does a login and a logout.
+This means that you can change any attribute of the api_object after having it created.
 
 ### Attributes & their defaults
 
@@ -50,6 +42,24 @@ Methods for sending requests to the REST API:
 - safe_mode: true             ==> Default is true (and it means read-only access). This means, that anything other than a GET request will throw an exception.
 - retry_counter: 3            ==> How many retries will there be after a timeout before an exception is thrown.
 - use_vdom: 'root'            ==> Set VDOM here. If you don't use VDOMs on your FortiGate device, 'root' is always correct.
+
+### Monitor API
+
+Methods for sending requests to the REST API:
+--> See FortiGate REST-API Docu for more information about params.
+- monitor_get(<APIPATH>, {}) # you can ommit vdom-param, this is set anyway
+  - irb(main):001:0> demo.monitor_get('firewall/policy').results.first.last_used
+    => 1514745165
+- monitor_post(<APIPATH>, {}) # you can ommit vdom-param, this is set anyway
+
+### CMDB API
+
+Methods for sending requests to the REST API:
+--> See FortiGate REST-API Docu for more information about params.
+- cmdb_get
+- cmdb_post
+- cmdb_put
+- cmdb_delete
 
 ### Example: connection to https://fortigate.fortidemo.com
 
