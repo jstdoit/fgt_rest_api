@@ -145,6 +145,5 @@ Write me an email if you have questions!
 
 ## Contributing
 
-I need support! As well in writing code and in doing tests and writing some tests for this gem.
 Any contribution is welcome!
 Bug reports and pull requests are welcome on GitHub at https://github.com/fuegito/fgt_rest_api.
