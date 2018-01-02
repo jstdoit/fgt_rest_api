@@ -141,8 +141,8 @@ module FGT
     end
 
     def find_src_policy_for_object(object, vdom = use_vdom)
-      objects = Array.new
-      rules = Array.new
+      objects = []
+      rules = []
       objects << policy_object(object_name: object, vdom: vdom)
       objects << find_group_for_object(object, vdom)
       objects.flatten.compact.uniq.each do |o|
@@ -155,8 +155,8 @@ module FGT
     end
 
     def find_dst_policy_for_object(object, vdom = use_vdom)
-      objects = Array.new
-      rules = Array.new
+      objects = []
+      rules = []
       objects << policy_object(object_name: object, vdom: vdom)
       objects << find_group_for_object(object, vdom)
       objects.flatten.compact.uniq.each do |o|

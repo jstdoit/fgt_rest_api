@@ -52,7 +52,7 @@ module FGT
       self.client = new_httpclient
       self.username = username
       self.secretkey = password
-      self.ccsrftoken = String.new
+      self.ccsrftoken = ''
       self.retry_counter = retry_counter
     end
 
