@@ -226,7 +226,7 @@ p.workbook do |wb|
   # VIPs (LB & DNAT)
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'VIPs' }
-  @headers = ["name", "type", "address"]
+  @headers = %w[name type address]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]]*@columns.size)
