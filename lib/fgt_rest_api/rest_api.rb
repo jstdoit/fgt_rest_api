@@ -131,8 +131,8 @@ module FGT
           end
         end
       end
-      url_path += "?vdom=#{vdom}" if %w(put delete).include?(request_method)
-      params[:vdom] = vdom if %w(post get).include?(request_method)
+      url_path += "?vdom=#{vdom}" if %w[put delete].include?(request_method)
+      params[:vdom] = vdom if %w[post get].include?(request_method)
       request(request_method, url_path, params)
     end
 
