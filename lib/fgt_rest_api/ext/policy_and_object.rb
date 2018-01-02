@@ -1,6 +1,5 @@
 module FGT
   class RestApi
-
     %w[address addrgrp vip vipgrp policy ippool].each do |name|
       define_method(name) do |vdom = use_vdom|
         memoize_results("@#{name}_response") do
@@ -60,7 +59,7 @@ module FGT
     end
 
     def ipnetwork(vdom = use_vdom)
-      address(vdom).select { |o| o.type == 'ipmask' && !(/255.255.255.255$/.match(o.subnet)) }
+      address(vdom).select { |o| o.type == 'ipmask' && !/255.255.255.255$/.match(o.subnet) }
     end
 
     def fqdn(vdom = use_vdom)
@@ -193,6 +192,5 @@ module FGT
       with_groups = ->(o) { [o] << find_group_for_object(o.name, vdom) }
       policy_object.select(&search).map(&with_groups).flatten.uniq.compact
     end
-
   end
 end
