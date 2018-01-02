@@ -17,7 +17,7 @@ options = {
 }
 
 parser = OptionParser.new do |opts|
-  opts.banner = "Usage: policy2xlsx.rb [options]"
+  opts.banner = 'Usage: policy2xlsx.rb [options]'
 
   opts.on('-f', '--fortigate fortigate', 'Hostname or IP address of FortiGate device.') do |fortigate|
     options[:ip] = fortigate
@@ -133,7 +133,7 @@ def fix_top_row
 end
 
 def create_ws_groups(obj_base, max_members)
-  @headers = ["name", ("members " * max_members).split(/\s/)].flatten
+  @headers = ['name', ('members ' * max_members).split(/\s/)].flatten
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -186,7 +186,7 @@ p = Axlsx::Package.new
 p.workbook do |wb|
   # define styles
   @style[:font_8] = wb.styles.add_style(sz: 8, alignment: { horizontal: :left })
-  @style[:bottom_thick_line] = wb.styles.add_style(sz: 8, b: true, border: { style: :thick, color: "FFFF0000", edges: [:bottom] }, alignment: { horizontal: :left })
+  @style[:bottom_thick_line] = wb.styles.add_style(sz: 8, b: true, border: { style: :thick, color: 'FFFF0000', edges: [:bottom] }, alignment: { horizontal: :left })
   @style[:wrap_text] = wb.styles.add_style(sz: 8, alignment: { wrap_text: true, horizontal: :left })
   @style[:obj_data_rows_color1] = wb.styles.add_style(sz: 8, border: Axlsx::STYLE_THIN_BORDER, bg_color: 'DBE5F1', alignment: { wrap_text: true })
   @style[:obj_data_firstrow_color1] = wb.styles.add_style(sz: 8, border: Axlsx::STYLE_THIN_BORDER, bg_color: 'DBE5F1', b: true, alignment: { wrap_text: true })
@@ -201,7 +201,7 @@ p.workbook do |wb|
   # addresses (range, host, network, fqdn)
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'AddressObjects' }
-  @headers = ["name", "type", "address/start-ip/fqdn", "netmask/end-ip/wildcard-fqdn"]
+  @headers = ['name', 'type', 'address/start-ip/fqdn', 'netmask/end-ip/wildcard-fqdn']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -247,7 +247,7 @@ p.workbook do |wb|
   # IPpools (SNAT)
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'IPPools' }
-  @headers = ["name", "type", "start-ip", "end-ip"]
+  @headers = ['name', 'type', 'start-ip', 'end-ip']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -260,7 +260,7 @@ p.workbook do |wb|
   # services
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'Services' }
-  @headers = ["name", "protocols", "tcp-ports", "udp-ports", "icmp-type", "icmp-code"]
+  @headers = ['name', 'protocols', 'tcp-ports', 'udp-ports', 'icmp-type', 'icmp-code']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -310,7 +310,7 @@ p.workbook do |wb|
   # policy
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'Policy' }
-  @headers = ["rule #ID", "status", "sequence", "folder", "source", "destination", "schedule", "service", "action"]
+  @headers = ['rule #ID', 'status', 'sequence', 'folder', 'source', 'destination', 'schedule', 'service', 'action']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
