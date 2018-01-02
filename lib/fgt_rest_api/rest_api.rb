@@ -102,11 +102,11 @@ module FGT
     end
 
     def new_httpclient
-      unless use_proxy
+      if use_proxy
+        ENV['http_proxy'] = proxy
+      else
         ENV['http_proxy'] = ''
         raise FGTPortNotOpenError unless self.class.tcp_port_open?(ip, port, timeout)
-      else
-        ENV['http_proxy'] = proxy
       end
       client = HTTPClient.new(nil)
       client.set_cookie_store('/dev/null')
