@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FGT
   class RestApi
     %w[address addrgrp vip vipgrp policy ippool].each do |name|

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FGT
   class RestApi
     def interface_by_name(interface, vdom = use_vdom)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FGT
   class FCHash < ::Hash
     def []=(key, value)

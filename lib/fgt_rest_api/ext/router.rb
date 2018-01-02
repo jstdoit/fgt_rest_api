@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FGT
   class RestApi
     %w[static policy ospf bgp isis rip].each do |name|
