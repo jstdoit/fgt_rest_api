@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FGT
   class RestApi
     %w[phase1 phase1_interface phase2 phase2_interface forticlient].each do |name|
