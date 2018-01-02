@@ -73,11 +73,11 @@ end
 timestamp = DateTime.now.strftime('%Y%m%d_%H-%M-%S')
 
 STDERR.puts "Connecting to FortiGate '#{options[:ip]}' and retrieving config for VDOM '#{options[:use_vdom]}'..."
-#rulebase = FGT::RestApi.new(ip: options[:ip], port: options[:port], username: options[:username], password: options[:password], use_vdom: options[:use_vdom])
+# rulebase = FGT::RestApi.new(ip: options[:ip], port: options[:port], username: options[:username], password: options[:password], use_vdom: options[:use_vdom])
 rulebase = FGT::RestApi.new(options)
 rulebase.timeout = 10
-#Report_dir = ENV['HOME'] + '/REPORT/policy/'
-#outfile_name = Report_dir + 'policy__' + server + '__' + vdom + '__' + timestamp + '.xlsx'
+# Report_dir = ENV['HOME'] + '/REPORT/policy/'
+# outfile_name = Report_dir + 'policy__' + server + '__' + vdom + '__' + timestamp + '.xlsx'
 outfile_name = "policy__#{options[:ip]}__#{options[:use_vdom]}__#{timestamp}.xlsx"
 ################################################################################
 ################################################################################
