@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'optparse'
 require 'axlsx'
 require 'fgt_rest_api'
@@ -17,7 +19,7 @@ options = {
 }
 
 parser = OptionParser.new do |opts|
-  opts.banner = "Usage: policy2xlsx.rb [options]"
+  opts.banner = 'Usage: policy2xlsx.rb [options]'
 
   opts.on('-f', '--fortigate fortigate', 'Hostname or IP address of FortiGate device.') do |fortigate|
     options[:ip] = fortigate
@@ -133,12 +135,12 @@ def fix_top_row
 end
 
 def create_ws_groups(obj_base, max_members)
-  @headers = ["name", ("members " * max_members).split(/\s/)].flatten
+  @headers = ['name', ('members ' * max_members).split(/\s/)].flatten
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
   obj_base.each do |o|
-    members = Array.new
+    members = []
     o.member.each do |m|
       members << xlsx_hyperlink(@cells[m.name][:hyperlink], m.name)
     end
@@ -158,11 +160,11 @@ end
   end
 
   def x_incr
-    self.x = self.x.next
+    self.x = x.next
   end
 
   def y_incr
-    self.y = self.y.next
+    self.y = y.next
   end
 
   def reset
@@ -172,10 +174,10 @@ end
 end.new
 
 # hash for collecting object references in xlsx
-@cells = Hash.new { |hsh, key| hsh[key] = Hash.new }
+@cells = Hash.new { |hsh, key| hsh[key] = {} }
 
 # hash for xlsx styles
-@style = Hash.new
+@style = {}
 
 # struct for sheet
 Sheet = Struct.new(:name, :ws)
@@ -186,7 +188,7 @@ p = Axlsx::Package.new
 p.workbook do |wb|
   # define styles
   @style[:font_8] = wb.styles.add_style(sz: 8, alignment: { horizontal: :left })
-  @style[:bottom_thick_line] = wb.styles.add_style(sz: 8, b: true, border: { style: :thick, color: "FFFF0000", edges: [:bottom] }, alignment: { horizontal: :left })
+  @style[:bottom_thick_line] = wb.styles.add_style(sz: 8, b: true, border: { style: :thick, color: 'FFFF0000', edges: [:bottom] }, alignment: { horizontal: :left })
   @style[:wrap_text] = wb.styles.add_style(sz: 8, alignment: { wrap_text: true, horizontal: :left })
   @style[:obj_data_rows_color1] = wb.styles.add_style(sz: 8, border: Axlsx::STYLE_THIN_BORDER, bg_color: 'DBE5F1', alignment: { wrap_text: true })
   @style[:obj_data_firstrow_color1] = wb.styles.add_style(sz: 8, border: Axlsx::STYLE_THIN_BORDER, bg_color: 'DBE5F1', b: true, alignment: { wrap_text: true })
@@ -201,7 +203,7 @@ p.workbook do |wb|
   # addresses (range, host, network, fqdn)
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'AddressObjects' }
-  @headers = ["name", "type", "address/start-ip/fqdn", "netmask/end-ip/wildcard-fqdn"]
+  @headers = ['name', 'type', 'address/start-ip/fqdn', 'netmask/end-ip/wildcard-fqdn']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -247,7 +249,7 @@ p.workbook do |wb|
   # IPpools (SNAT)
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'IPPools' }
-  @headers = ["name", "type", "start-ip", "end-ip"]
+  @headers = ['name', 'type', 'start-ip', 'end-ip']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -260,7 +262,7 @@ p.workbook do |wb|
   # services
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'Services' }
-  @headers = ["name", "protocols", "tcp-ports", "udp-ports", "icmp-type", "icmp-code"]
+  @headers = ['name', 'protocols', 'tcp-ports', 'udp-ports', 'icmp-type', 'icmp-code']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
@@ -285,7 +287,7 @@ p.workbook do |wb|
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
   rulebase.policy.each do |o|
-    @cells[:policy][o.policyid] = Hash.new
+    @cells[:policy][o.policyid] = {}
     @cells[:policy][o.policyid][:src_hyperlink] = '"#' + @sheet.name + '!$A$' + @cell.y.to_s + '"'
     @cells[:policy][o.policyid][:src_cell] = @sheet.name + '!$A$' + @cell.y.to_s
     add_row(row: ["rule id ##{o.policyid}", 'srcaddr', 'objects'], styles: [@style[:header]] * @columns.size)
@@ -310,7 +312,7 @@ p.workbook do |wb|
   # policy
   @cell.reset
   @sheet = worksheets.find { |ws| ws.name == 'Policy' }
-  @headers = ["rule #ID", "status", "sequence", "folder", "source", "destination", "schedule", "service", "action"]
+  @headers = ['rule #ID', 'status', 'sequence', 'folder', 'source', 'destination', 'schedule', 'service', 'action']
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HTTPError < StandardError; end
 class HTTPStatusNot200Error < HTTPError; end
 class HTTP302FoundMovedError < HTTPError; end

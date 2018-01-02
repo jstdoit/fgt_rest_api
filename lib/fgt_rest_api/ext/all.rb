@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fgt_rest_api'
 require 'fgt_rest_api/ext/system'
 require 'fgt_rest_api/ext/router'
