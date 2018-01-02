@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.licenses      = ['Artistic-2.0']
   spec.authors       = ['Stefan Feurle']
   spec.email         = ['stefan.feurle@gmail.com']
-  spec.summary       = %q(ruby API wrapper for accessing FortiNet's FortiGate REST API.)
-  spec.description   = %q()
+  spec.summary       = "ruby API wrapper for accessing FortiNet's FortiGate REST API."
+  spec.description   = ''
   spec.homepage      = "https://github.com/fuegito/fgt_rest_api"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
