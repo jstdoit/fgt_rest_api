@@ -158,11 +158,11 @@ end
   end
 
   def x_incr
-    self.x = self.x.next
+    self.x = x.next
   end
 
   def y_incr
-    self.y = self.y.next
+    self.y = y.next
   end
 
   def reset
