@@ -134,8 +134,8 @@ module FGT
           end
         end
       end
-      url_path += "?vdom=#{vdom}" if %w( put delete ).include?(request_method)
-      params[:vdom] = vdom if %w( post get ).include?(request_method)
+      url_path += "?vdom=#{vdom}" if %w(put delete).include?(request_method)
+      params[:vdom] = vdom if %w(post get).include?(request_method)
       request(request_method, url_path, params)
     end
 
@@ -150,9 +150,9 @@ module FGT
           elsif method == 'post'
             response = client.post(url, params.to_json, 'X-CSRFTOKEN' => ccsrftoken)
           elsif method == 'put'
-            response = client.put(url, body: params.to_json, header: {'X-CSRFTOKEN' => ccsrftoken})
+            response = client.put(url, body: params.to_json, header: { 'X-CSRFTOKEN' => ccsrftoken })
           elsif method == 'delete'
-            response = client.delete(url, query: params, header: {'X-CSRFTOKEN' => ccsrftoken})
+            response = client.delete(url, query: params, header: { 'X-CSRFTOKEN' => ccsrftoken })
           else
             raise HTTPMethodUnknownError
           end

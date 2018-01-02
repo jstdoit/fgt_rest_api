@@ -83,7 +83,7 @@ outfile_name = "policy__#{options[:ip]}__#{options[:use_vdom]}__#{timestamp}.xls
 ################################################################################
 
 def get_xlsx_columns(array = @headers)
-  ('A'..'Z').to_a[0..(array.size-1)]
+  ('A'..'Z').to_a[0..(array.size - 1)]
 end
 
 def add_obj_xlsxreference(o)
@@ -136,7 +136,7 @@ def create_ws_groups(obj_base, max_members)
   @headers = ["name", ("members " * max_members).split(/\s/)].flatten
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   obj_base.each do |o|
     members = Array.new
     o.member.each do |m|
@@ -201,7 +201,7 @@ p.workbook do |wb|
   @headers = ["name", "type", "address/start-ip/fqdn", "netmask/end-ip/wildcard-fqdn"]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   (rulebase.ipaddress + rulebase.ipnetwork).each do |o|
     add_row(object: o, row: [o.name, o.type, *o.subnet.split(/\s/)])
   end
@@ -229,7 +229,7 @@ p.workbook do |wb|
   @headers = ["name", "type", "address"]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   rulebase.vip.each do |o|
     add_row(object: o, row: [o.name, o.type, o.extip])
   end
@@ -251,7 +251,7 @@ p.workbook do |wb|
   @headers = ["name", "type", "start-ip", "end-ip"]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   rulebase.ippool.each do |o|
     add_row(object: o, row: [o.name, o.type, o.startip, o.endip])
   end
@@ -265,7 +265,7 @@ p.workbook do |wb|
   @headers = ["name", "protocols", "tcp-ports", "udp-ports", "icmp-type", "icmp-code"]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   rulebase.service_custom.each do |o|
     add_row(object: o, row: [o.name, o.protocol, o.tcp_portrange, o.udp_portrange, o.icmptype, o.icmpcode])
   end
@@ -287,28 +287,28 @@ p.workbook do |wb|
   @headers = [''] * 3
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
+  add_row(styles: [@style[:header]] * @columns.size)
   rulebase.policy.each do |o|
     @cells[:policy][o.policyid] = Hash.new
     @cells[:policy][o.policyid][:src_hyperlink] = '"#' + @sheet.name + '!$A$' + @cell.y.to_s + '"'
     @cells[:policy][o.policyid][:src_cell] = @sheet.name + '!$A$' + @cell.y.to_s
-    add_row(row: ["rule id ##{o.policyid}", 'srcaddr', 'objects'], styles: [@style[:header]]*@columns.size)
+    add_row(row: ["rule id ##{o.policyid}", 'srcaddr', 'objects'], styles: [@style[:header]] * @columns.size)
     o.srcaddr.each do |src|
       add_row(row: ['', '', xlsx_hyperlink(@cells[src.name][:hyperlink], src.name)])
     end
     @cells[:policy][o.policyid][:dst_hyperlink] = '"#' + @sheet.name + '!$A$' + @cell.y.to_s + '"'
     @cells[:policy][o.policyid][:dst_cell] = @sheet.name + '!$A$' + @cell.y.to_s
-    add_row(row: ["rule id ##{o.policyid}", 'dstaddr', 'objects'], styles: [@style[:header]]*@columns.size)
+    add_row(row: ["rule id ##{o.policyid}", 'dstaddr', 'objects'], styles: [@style[:header]] * @columns.size)
     o.dstaddr.each do |dst|
       add_row(row: ['', '', xlsx_hyperlink(@cells[dst.name][:hyperlink], dst.name)])
     end
     @cells[:policy][o.policyid][:svc_hyperlink] = '"#' + @sheet.name + '!$A$' + @cell.y.to_s + '"'
     @cells[:policy][o.policyid][:svc_cell] = @sheet.name + '!$A$' + @cell.y.to_s
-    add_row(row: ["rule id ##{o.policyid}", 'service', 'objects'], styles: [@style[:header]]*@columns.size)
+    add_row(row: ["rule id ##{o.policyid}", 'service', 'objects'], styles: [@style[:header]] * @columns.size)
     o.service.each do |svc|
       add_row(row: ['', '', xlsx_hyperlink(@cells[svc.name][:hyperlink], svc.name)])
     end
-    2.times { add_row(styles: [@style[:header]]*@columns.size) }
+    2.times { add_row(styles: [@style[:header]] * @columns.size) }
   end
 
 
@@ -318,13 +318,13 @@ p.workbook do |wb|
   @headers = ["rule #ID", "status", "sequence", "folder", "source", "destination", "schedule", "service", "action"]
   (@headers.size - 1).times { @cell.x_incr }
   @columns = get_xlsx_columns
-  add_row(styles: [@style[:header]]*@columns.size)
-  rulebase.policy.each_with_index do |o,i|
+  add_row(styles: [@style[:header]] * @columns.size)
+  rulebase.policy.each_with_index do |o, i|
     add_row(
       row: [
         o.policyid,
         o.status,
-        (i+1).to_s,
+        (i + 1).to_s,
         o.global_label,
         xlsx_hyperlink(@cells[:policy][o.policyid][:src_hyperlink], o.srcaddr.map(&:name).join("\n")),
         xlsx_hyperlink(@cells[:policy][o.policyid][:dst_hyperlink], o.dstaddr.map(&:name).join("\n")),
