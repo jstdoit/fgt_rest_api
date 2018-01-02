@@ -1,7 +1,7 @@
 
 # frozen_string_literal: true
 
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fgt_rest_api/version'
 
@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['stefan.feurle@gmail.com']
   spec.summary       = %q(ruby API wrapper for accessing FortiNet's FortiGate REST API.)
   spec.description   = %q()
-  spec.homepage      = "https://github.com/fuegito/fgt_rest_api"
+  spec.homepage      = 'https://github.com/fuegito/fgt_rest_api'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
