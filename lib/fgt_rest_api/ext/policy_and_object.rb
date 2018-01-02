@@ -131,7 +131,7 @@ module FGT
       addr = NetAddr::CIDR.create(addr)
       ippool(vdom).select do |o|
         (NetAddr::CIDR.create(o.startip)..NetAddr::CIDR.create(o.endip)).cover?(addr) ||
-          (NetAddr::CIDR.create(o.source_startip)..NetAddr::CIDR.create(o.source_endip)).include?(addr)
+          (NetAddr::CIDR.create(o.source_startip)..NetAddr::CIDR.create(o.source_endip)).cover?(addr)
       end.uniq
     end
 
