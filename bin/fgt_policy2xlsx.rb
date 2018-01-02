@@ -138,7 +138,7 @@ def create_ws_groups(obj_base, max_members)
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
   obj_base.each do |o|
-    members = Array.new
+    members = []
     o.member.each do |m|
       members << xlsx_hyperlink(@cells[m.name][:hyperlink], m.name)
     end
@@ -172,10 +172,10 @@ end
 end.new
 
 # hash for collecting object references in xlsx
-@cells = Hash.new { |hsh, key| hsh[key] = Hash.new }
+@cells = Hash.new { |hsh, key| hsh[key] = {} }
 
 # hash for xlsx styles
-@style = Hash.new
+@style = {}
 
 # struct for sheet
 Sheet = Struct.new(:name, :ws)
@@ -285,7 +285,7 @@ p.workbook do |wb|
   @columns = get_xlsx_columns
   add_row(styles: [@style[:header]] * @columns.size)
   rulebase.policy.each do |o|
-    @cells[:policy][o.policyid] = Hash.new
+    @cells[:policy][o.policyid] = {}
     @cells[:policy][o.policyid][:src_hyperlink] = '"#' + @sheet.name + '!$A$' + @cell.y.to_s + '"'
     @cells[:policy][o.policyid][:src_cell] = @sheet.name + '!$A$' + @cell.y.to_s
     add_row(row: ["rule id ##{o.policyid}", 'srcaddr', 'objects'], styles: [@style[:header]] * @columns.size)
