@@ -54,7 +54,7 @@ module FGT
       self.client = new_httpclient
       self.username = username
       self.secretkey = password
-      self.ccsrftoken = String.new
+      self.ccsrftoken = ''
       self.retry_counter = retry_counter
     end
 
@@ -104,11 +104,11 @@ module FGT
     end
 
     def new_httpclient
-      unless use_proxy
+      if use_proxy
+        ENV['http_proxy'] = proxy
+      else
         ENV['http_proxy'] = ''
         raise FGTPortNotOpenError unless self.class.tcp_port_open?(ip, port, timeout)
-      else
-        ENV['http_proxy'] = proxy
       end
       client = HTTPClient.new(nil)
       client.set_cookie_store('/dev/null')
@@ -128,13 +128,11 @@ module FGT
         url_path += "#{mkey}/"
         unless child_name.empty?
           url_path += "#{child_name}/"
-          unless child_mkey.empty?
-            url_path += "#{child_mkey}/"
-          end
+          url_path += "#{child_mkey}/" unless child_mkey.empty?
         end
       end
-      url_path += "?vdom=#{vdom}" if %w(put delete).include?(request_method)
-      params[:vdom] = vdom if %w(post get).include?(request_method)
+      url_path += "?vdom=#{vdom}" if %w[put delete].include?(request_method)
+      params[:vdom] = vdom if %w[post get].include?(request_method)
       request(request_method, url_path, params)
     end
 
