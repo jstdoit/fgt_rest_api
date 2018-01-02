@@ -87,7 +87,7 @@ module FGT
           NetAddr::CIDR.create(o.subnet).contains?(addr) || (NetAddr::CIDR.create(o.subnet) == addr)
         elsif o.type == 'iprange'
           (NetAddr::CIDR.create(o.start_ip)..NetAddr::CIDR.create(o.end_ip)).cover?(addr)
-        elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/ === o.type
+        elsif /^\s*(?:wildcard(?:_|-))?fqdn\s*$/.match?(o.type)
           next
         # TODO: add more types, maybe?
         else
