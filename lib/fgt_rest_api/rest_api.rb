@@ -126,9 +126,7 @@ module FGT
         url_path += "#{mkey}/"
         unless child_name.empty?
           url_path += "#{child_name}/"
-          unless child_mkey.empty?
-            url_path += "#{child_mkey}/"
-          end
+          url_path += "#{child_mkey}/" unless child_mkey.empty?
         end
       end
       url_path += "?vdom=#{vdom}" if %w[put delete].include?(request_method)
