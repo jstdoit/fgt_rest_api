@@ -118,11 +118,11 @@ module FGT
 
     def cmdb(request_method: 'get', path:, name:, mkey: '', child_name: '', child_mkey: '', vdom: use_vdom, params: {})
       raise(SafeModeActiveError) if request_method != 'get' && safe_mode
-      raise(CMDBPathError) unless /^\w*\.?\w+$/ === path
-      raise(CMDBNameError) unless /^[^\/]+$/ === name
-      raise(CMDBMKeyError) unless /^[^\/]*$/ === mkey
-      raise(CMDBChildNameError) unless /^[^\/]*$/ === child_name
-      raise(CMDBChildMKeyError) unless /^[^\/]*$/ === child_mkey
+      raise(CMDBPathError) unless /^\w*\.?\w+$/.match?(path)
+      raise(CMDBNameError) unless /^[^\/]+$/.match?(name)
+      raise(CMDBMKeyError) unless /^[^\/]*$/.match?(mkey)
+      raise(CMDBChildNameError) unless /^[^\/]*$/.match?(child_name)
+      raise(CMDBChildMKeyError) unless /^[^\/]*$/.match?(child_mkey)
       url_path = "api/#{api_version}/cmdb/#{path}/#{name}/"
       unless mkey.empty?
         url_path += "#{mkey}/"
