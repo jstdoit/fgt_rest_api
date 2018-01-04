@@ -26,8 +26,7 @@ module FGT
       :safe_mode, :use_vdom, :retry_counter
     )
 
-    def initialize(
-      api_version: 'v2',
+    def initialize(api_version: 'v2',
       url_schema: 'https',
       ip:,
       port: 443,
