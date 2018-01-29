@@ -36,7 +36,13 @@ module FGT
     def getter_method(key)
       method_name = key.to_s.tr('-', '_')
       return true if respond_to?(method_name.to_sym)
-      define_singleton_method(method_name) { fetch(key) }
+      define_singleton_method(method_name) do
+        begin
+          fetch(key)
+        rescue KeyError
+          fetch(key.to_s)
+        end
+      end
     end
 
     def setter_method(key)
